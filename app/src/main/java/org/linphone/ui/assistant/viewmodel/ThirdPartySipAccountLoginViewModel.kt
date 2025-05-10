@@ -26,6 +26,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.linphone.LinphoneApplication.Companion.coreContext
+import org.linphone.LinphoneApplication.Companion.corePreferences
 import org.linphone.R
 import org.linphone.core.Account
 import org.linphone.core.AuthInfo
@@ -50,17 +51,32 @@ constructor() : GenericViewModel() {
     }
 
     val username = MutableLiveData<String>()
+    val authId = MutableLiveData<String>()
     val password = MutableLiveData<String>()
+    val domain = MutableLiveData<String>()
+    val displayName = MutableLiveData<String>()
+    val transport = MutableLiveData<String>()
+    val internationalPrefix = MutableLiveData<String>()
+    val internationalPrefixIsoCountryCode = MutableLiveData<String>()
     val showPassword = MutableLiveData<Boolean>()
+    val expandAdvancedSettings = MutableLiveData<Boolean>()
+    val outboundProxy = MutableLiveData<String>()
     val loginEnabled = MediatorLiveData<Boolean>()
     val registrationInProgress = MutableLiveData<Boolean>()
 
     val accountLoggedInEvent: MutableLiveData<Event<Boolean>> by lazy {
         MutableLiveData<Event<Boolean>>()
     }
+
     val accountLoginErrorEvent: MutableLiveData<Event<String>> by lazy {
         MutableLiveData<Event<String>>()
     }
+
+    val defaultTransportIndexEvent: MutableLiveData<Event<Int>> by lazy {
+        MutableLiveData<Event<Int>>()
+    }
+
+    val availableTransports = arrayListOf<String>()
 
     private lateinit var newlyCreatedAuthInfo: AuthInfo
     private lateinit var newlyCreatedAccount: Account
@@ -86,11 +102,15 @@ constructor() : GenericViewModel() {
                     core.removeListener(this)
 
                     val error = when (account.error) {
-                        Reason.Forbidden -> AppUtils.getString(R.string.assistant_account_login_forbidden_error)
-                        else -> AppUtils.getFormattedString(
-                            R.string.assistant_account_login_error,
-                            account.error.toString()
-                        )
+                        Reason.Forbidden -> {
+                            AppUtils.getString(R.string.assistant_account_login_forbidden_error)
+                        }
+                        else -> {
+                            AppUtils.getFormattedString(
+                                R.string.assistant_account_login_error,
+                                account.error.toString()
+                            )
+                        }
                     }
                     accountLoginErrorEvent.postValue(Event(error))
                     Log.e("$TAG Account failed to REGISTER [$message], removing it")
@@ -103,6 +123,7 @@ constructor() : GenericViewModel() {
 
     init {
         showPassword.value = false
+        expandAdvancedSettings.value = false
         registrationInProgress.value = false
 
         loginEnabled.addSource(username) {
@@ -111,7 +132,24 @@ constructor() : GenericViewModel() {
         loginEnabled.addSource(password) {
             loginEnabled.value = isLoginButtonEnabled()
         }
-        TransportType.Tls.name.uppercase(Locale.getDefault())
+
+        availableTransports.add(TransportType.Udp.name.uppercase(Locale.getDefault()))
+        availableTransports.add(TransportType.Tcp.name.uppercase(Locale.getDefault()))
+        availableTransports.add(TransportType.Tls.name.uppercase(Locale.getDefault()))
+        defaultTransportIndexEvent.postValue(Event(0))
+
+        coreContext.postOnCoreThread {
+            domain.postValue(corePreferences.thirdPartySipAccountDefaultDomain)
+            val defaultTransport = corePreferences.thirdPartySipAccountDefaultTransport.uppercase(
+                Locale.getDefault()
+            )
+            val index = if (defaultTransport.isNotEmpty()) {
+                availableTransports.indexOf(defaultTransport)
+            } else {
+                availableTransports.size - 1
+            }
+            defaultTransportIndexEvent.postValue(Event(index))
+        }
     }
 
     @UiThread
@@ -120,8 +158,10 @@ constructor() : GenericViewModel() {
         val pass = password.value.orEmpty().trim()
 
         if (email.isEmpty() || pass.isEmpty()) return
+
         registrationInProgress.postValue(true)
         coreContext.postOnCoreThread { core ->
+            core.loadConfigFromXml(corePreferences.thirdPartyDefaultValuesPath)
             viewModelScope.launch {
                 try {
                     val authResponse = RetrofitBuilder.apiService.login(email, pass)
@@ -149,7 +189,6 @@ constructor() : GenericViewModel() {
                     newlyCreatedAccount = core.createAccount(accountParams)
                     core.addListener(coreListener)
                     core.addAccount(newlyCreatedAccount)
-
                 } catch (e: Exception) {
                     accountLoginErrorEvent.postValue(Event("Login failed: ${e.localizedMessage}"))
                 }

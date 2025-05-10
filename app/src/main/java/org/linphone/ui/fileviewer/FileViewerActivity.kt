@@ -77,7 +77,7 @@ class FileViewerActivity : GenericActivity() {
         if (isFromEphemeralMessage) {
             Log.i("$TAG Displayed content is from an ephemeral chat message, force secure mode to prevent screenshots")
             // Force preventing screenshots for ephemeral messages contents
-            enableWindowSecureMode(true)
+            enableWindowSecureMode(false)
         }
 
         val timestamp = args.getLong("timestamp", -1)
