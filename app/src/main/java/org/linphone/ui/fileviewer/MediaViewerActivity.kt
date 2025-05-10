@@ -57,7 +57,8 @@ class MediaViewerActivity : GenericActivity() {
                 viewModel.isCurrentlyDisplayedFileFromEphemeralMessage.value = isFromEphemeral
                 if (!corePreferences.enableSecureMode) {
                     // Force preventing screenshots for ephemeral messages contents, but allow it for others
-                    enableWindowSecureMode(isFromEphemeral)
+//                    enableWindowSecureMode(isFromEphemeral)
+                    enableWindowSecureMode(false)
                 }
             }
         }
@@ -108,7 +109,7 @@ class MediaViewerActivity : GenericActivity() {
         if (isFromEphemeralMessage) {
             Log.i("$TAG Displayed content is from an ephemeral chat message, force secure mode to prevent screenshots")
             // Force preventing screenshots for ephemeral messages contents
-            enableWindowSecureMode(true)
+            enableWindowSecureMode(false)
         }
 
         val timestamp = args.getLong("timestamp", -1)
