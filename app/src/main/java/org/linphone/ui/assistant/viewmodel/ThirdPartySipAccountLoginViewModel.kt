@@ -23,9 +23,9 @@ import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.Locale
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import org.linphone.LinphoneApplication.Companion.coreContext
-import org.linphone.LinphoneApplication.Companion.corePreferences
 import org.linphone.R
 import org.linphone.core.Account
 import org.linphone.core.AuthInfo
@@ -36,56 +36,31 @@ import org.linphone.core.Reason
 import org.linphone.core.RegistrationState
 import org.linphone.core.TransportType
 import org.linphone.core.tools.Log
+import org.linphone.network.RetrofitBuilder
 import org.linphone.ui.GenericViewModel
 import org.linphone.utils.AppUtils
 import org.linphone.utils.Event
+import java.util.Locale
 
 class ThirdPartySipAccountLoginViewModel
-    @UiThread
-    constructor() : GenericViewModel() {
+@UiThread
+constructor() : GenericViewModel() {
     companion object {
         private const val TAG = "[Third Party SIP Account Login ViewModel]"
     }
 
     val username = MutableLiveData<String>()
-
-    val authId = MutableLiveData<String>()
-
     val password = MutableLiveData<String>()
-
-    val domain = MutableLiveData<String>()
-
-    val displayName = MutableLiveData<String>()
-
-    val transport = MutableLiveData<String>()
-
-    val internationalPrefix = MutableLiveData<String>()
-
-    val internationalPrefixIsoCountryCode = MutableLiveData<String>()
-
     val showPassword = MutableLiveData<Boolean>()
-
-    val expandAdvancedSettings = MutableLiveData<Boolean>()
-
-    val outboundProxy = MutableLiveData<String>()
-
     val loginEnabled = MediatorLiveData<Boolean>()
-
     val registrationInProgress = MutableLiveData<Boolean>()
 
     val accountLoggedInEvent: MutableLiveData<Event<Boolean>> by lazy {
         MutableLiveData<Event<Boolean>>()
     }
-
     val accountLoginErrorEvent: MutableLiveData<Event<String>> by lazy {
         MutableLiveData<Event<String>>()
     }
-
-    val defaultTransportIndexEvent: MutableLiveData<Event<Int>> by lazy {
-        MutableLiveData<Event<Int>>()
-    }
-
-    val availableTransports = arrayListOf<String>()
 
     private lateinit var newlyCreatedAuthInfo: AuthInfo
     private lateinit var newlyCreatedAccount: Account
@@ -104,8 +79,6 @@ class ThirdPartySipAccountLoginViewModel
                 if (state == RegistrationState.Ok) {
                     registrationInProgress.postValue(false)
                     core.removeListener(this)
-
-                    // Set new account as default
                     core.defaultAccount = newlyCreatedAccount
                     accountLoggedInEvent.postValue(Event(true))
                 } else if (state == RegistrationState.Failed) {
@@ -113,18 +86,13 @@ class ThirdPartySipAccountLoginViewModel
                     core.removeListener(this)
 
                     val error = when (account.error) {
-                        Reason.Forbidden -> {
-                            AppUtils.getString(R.string.assistant_account_login_forbidden_error)
-                        }
-                        else -> {
-                            AppUtils.getFormattedString(
-                                R.string.assistant_account_login_error,
-                                account.error.toString()
-                            )
-                        }
+                        Reason.Forbidden -> AppUtils.getString(R.string.assistant_account_login_forbidden_error)
+                        else -> AppUtils.getFormattedString(
+                            R.string.assistant_account_login_error,
+                            account.error.toString()
+                        )
                     }
                     accountLoginErrorEvent.postValue(Event(error))
-
                     Log.e("$TAG Account failed to REGISTER [$message], removing it")
                     core.removeAuthInfo(newlyCreatedAuthInfo)
                     core.removeAccount(newlyCreatedAccount)
@@ -135,142 +103,57 @@ class ThirdPartySipAccountLoginViewModel
 
     init {
         showPassword.value = false
-        expandAdvancedSettings.value = false
         registrationInProgress.value = false
 
         loginEnabled.addSource(username) {
             loginEnabled.value = isLoginButtonEnabled()
         }
-        loginEnabled.addSource(domain) {
+        loginEnabled.addSource(password) {
             loginEnabled.value = isLoginButtonEnabled()
         }
-
-        // TODO: handle formatting errors ?
-
-        availableTransports.add(TransportType.Udp.name.uppercase(Locale.getDefault()))
-        availableTransports.add(TransportType.Tcp.name.uppercase(Locale.getDefault()))
-        availableTransports.add(TransportType.Tls.name.uppercase(Locale.getDefault()))
-
-        coreContext.postOnCoreThread {
-            domain.postValue(corePreferences.thirdPartySipAccountDefaultDomain)
-
-            val defaultTransport = corePreferences.thirdPartySipAccountDefaultTransport.uppercase(
-                Locale.getDefault()
-            )
-            val index = if (defaultTransport.isNotEmpty()) {
-                availableTransports.indexOf(defaultTransport)
-            } else {
-                availableTransports.size - 1
-            }
-            defaultTransportIndexEvent.postValue(Event(index))
-        }
+        TransportType.Tls.name.uppercase(Locale.getDefault())
     }
 
     @UiThread
     fun login() {
+        val email = username.value.orEmpty().trim()
+        val pass = password.value.orEmpty().trim()
+
+        if (email.isEmpty() || pass.isEmpty()) return
+        registrationInProgress.postValue(true)
         coreContext.postOnCoreThread { core ->
-            core.loadConfigFromXml(corePreferences.thirdPartyDefaultValuesPath)
+            viewModelScope.launch {
+                try {
+                    val authResponse = RetrofitBuilder.apiService.login(email, pass)
+                    val userDetails = RetrofitBuilder.apiService.getUserDetails(authResponse.uid)
 
-            // Remove sip: in front of domain, just in case...
-            val domainValue = domain.value.orEmpty().trim()
-            val domain = if (domainValue.startsWith("sip:")) {
-                domainValue.substring("sip:".length)
-            } else {
-                domainValue
-            }
+                    val apiUsername = userDetails.username
+                    val apiPassword = userDetails.password
+                    val apiDomain = userDetails.authorized_sip_domain
 
-            // Allow to enter SIP identity instead of simply username
-            // in case identity domain doesn't match proxy domain
-            var user = username.value.orEmpty().trim()
-            if (user.startsWith("sip:")) {
-                user = user.substring("sip:".length)
-            } else if (user.startsWith("sips:")) {
-                user = user.substring("sips:".length)
-            }
-            if (user.contains("@")) {
-                user = user.split("@")[0]
-            }
+                    Log.i("$TAG Parsed username is [$apiUsername] and domain [$apiDomain]")
 
-            val userId = authId.value.orEmpty().trim()
-
-            Log.i("$TAG Parsed username is [$user], user ID [$userId] and domain [$domain]")
-
-            val identity = "sip:$user@$domain"
-            val identityAddress = Factory.instance().createAddress(identity)
-            if (identityAddress == null) {
-                Log.e("$TAG Can't parse [$identity] as Address!")
-                showRedToast(R.string.assistant_login_cant_parse_address_toast, R.drawable.warning_circle)
-                return@postOnCoreThread
-            }
-
-            val accounts = core.accountList
-            val found = accounts.find {
-                it.params.identityAddress?.weakEqual(identityAddress) == true
-            }
-            if (found != null) {
-                Log.w("$TAG An account with the same identity address [${identityAddress.asStringUriOnly()}] already exists, do not add it again!")
-                showRedToast(R.string.assistant_account_login_already_connected_error, R.drawable.warning_circle)
-                return@postOnCoreThread
-            }
-
-            newlyCreatedAuthInfo = Factory.instance().createAuthInfo(
-                user,
-                userId,
-                password.value.orEmpty().trim(),
-                null,
-                null,
-                domainValue
-            )
-            core.addAuthInfo(newlyCreatedAuthInfo)
-
-            val accountParams = core.createAccountParams()
-
-            if (displayName.value.orEmpty().isNotEmpty()) {
-                identityAddress.displayName = displayName.value.orEmpty().trim()
-            }
-            accountParams.identityAddress = identityAddress
-
-            val outboundProxyValue = outboundProxy.value.orEmpty().trim()
-            val serverAddress = if (outboundProxyValue.isNotEmpty()) {
-                val server = if (outboundProxyValue.startsWith("sip:")) {
-                    outboundProxyValue
-                } else {
-                    "sip:$outboundProxyValue"
-                }
-                Factory.instance().createAddress(server)
-            } else {
-                Factory.instance().createAddress("sip:$domain")
-            }
-
-            serverAddress?.transport = when (transport.value.orEmpty().trim()) {
-                TransportType.Tcp.name.uppercase(Locale.getDefault()) -> TransportType.Tcp
-                TransportType.Tls.name.uppercase(Locale.getDefault()) -> TransportType.Tls
-                else -> TransportType.Udp
-            }
-            accountParams.serverAddress = serverAddress
-
-            val prefix = internationalPrefix.value.orEmpty().trim()
-            val isoCountryCode = internationalPrefixIsoCountryCode.value.orEmpty()
-            if (prefix.isNotEmpty()) {
-                val prefixDigits = if (prefix.startsWith("+")) {
-                    prefix.substring(1)
-                } else {
-                    prefix
-                }
-                if (prefixDigits.isNotEmpty()) {
-                    Log.i(
-                        "$TAG Setting international prefix [$prefixDigits]($isoCountryCode) in account params"
+                    newlyCreatedAuthInfo = Factory.instance().createAuthInfo(
+                        apiUsername, "", apiPassword, null, null, apiDomain
                     )
-                    accountParams.internationalPrefix = prefixDigits
-                    accountParams.internationalPrefixIsoCountryCode = isoCountryCode
+                    core.addAuthInfo(newlyCreatedAuthInfo)
+
+                    val accountParams = core.createAccountParams()
+                    val identityAddress = Factory.instance().createAddress("sip:$apiUsername@$apiDomain")
+                    accountParams.identityAddress = identityAddress
+
+                    val serverAddress = Factory.instance().createAddress("sip:$apiDomain")
+                    serverAddress?.transport = TransportType.Tls
+                    accountParams.serverAddress = serverAddress
+
+                    newlyCreatedAccount = core.createAccount(accountParams)
+                    core.addListener(coreListener)
+                    core.addAccount(newlyCreatedAccount)
+
+                } catch (e: Exception) {
+                    accountLoginErrorEvent.postValue(Event("Login failed: ${e.localizedMessage}"))
                 }
             }
-
-            newlyCreatedAccount = core.createAccount(accountParams)
-
-            registrationInProgress.postValue(true)
-            core.addListener(coreListener)
-            core.addAccount(newlyCreatedAccount)
         }
     }
 
@@ -281,12 +164,6 @@ class ThirdPartySipAccountLoginViewModel
 
     @UiThread
     private fun isLoginButtonEnabled(): Boolean {
-        // Password isn't mandatory as authentication could be Bearer
-        return username.value.orEmpty().isNotEmpty() && domain.value.orEmpty().isNotEmpty()
-    }
-
-    @UiThread
-    fun toggleAdvancedSettingsExpand() {
-        expandAdvancedSettings.value = expandAdvancedSettings.value == false
+        return username.value.orEmpty().isNotEmpty() && password.value.orEmpty().isNotEmpty()
     }
 }

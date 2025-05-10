@@ -54,6 +54,8 @@ class AccountProfileViewModel
         private const val TAG = "[Account Profile ViewModel]"
     }
 
+    val navigateToThirdPartyLogin = MutableLiveData<Event<Unit>>()
+
     val accountModel = MutableLiveData<AccountModel>()
 
     val sipAddress = MutableLiveData<String>()

@@ -29,55 +29,34 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.UiThread
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
-import org.linphone.LinphoneApplication.Companion.coreContext
 import org.linphone.R
 import org.linphone.compatibility.Compatibility
 import org.linphone.core.tools.Log
 import org.linphone.databinding.AssistantPermissionsFragmentBinding
 import org.linphone.ui.GenericFragment
-import org.linphone.ui.assistant.AssistantActivity
 
 @UiThread
 class PermissionsFragment : GenericFragment() {
-    companion object {
-        private const val TAG = "[Permissions Fragment]"
-    }
 
     private lateinit var binding: AssistantPermissionsFragmentBinding
-
-    private var leaving = false
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        var allGranted = true
-        permissions.entries.forEach {
-            val permissionName = it.key
-            val isGranted = it.value
-            if (isGranted) {
-                Log.i("Permission [$permissionName] is now granted")
-            } else {
-                Log.i("Permission [$permissionName] has been denied")
-                allGranted = false
-            }
+        val allGranted = permissions.all { it.value }
+        permissions.forEach { (permission, granted) ->
+            Log.i("Permission [$permission] is ${if (granted) "granted" else "denied"}")
         }
-
         if (!allGranted) {
-            Log.w(
-                "$TAG Not all permissions were granted, leaving anyway, they will be asked again later..."
-            )
+            Log.w("[PermissionsFragment] Not all permissions were granted. Proceeding anyway...")
         }
-        leave()
+        goToLoginFragment()
     }
 
     private val telecomManagerPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            Log.i("$TAG MANAGE_OWN_CALLS permission has been granted")
-        } else {
-            Log.w("$TAG MANAGE_OWN_CALLS permission has been denied, leaving this fragment")
-        }
+        Log.i("[PermissionsFragment] MANAGE_OWN_CALLS is ${if (isGranted) "granted" else "denied"}")
     }
 
     override fun onCreateView(
@@ -99,15 +78,13 @@ class PermissionsFragment : GenericFragment() {
         }
 
         binding.setSkipClickListener {
-            Log.i("$TAG User clicked skip...")
-            leave()
+            Log.i("[PermissionsFragment] User clicked skip.")
+            goToLoginFragment()
         }
 
         binding.setGrantAllClickListener {
-            Log.i("$TAG Requesting all permissions")
-            requestPermissionLauncher.launch(
-                Compatibility.getAllRequiredPermissionsArray()
-            )
+            Log.i("[PermissionsFragment] Requesting all permissions.")
+            requestPermissionLauncher.launch(Compatibility.getAllRequiredPermissionsArray())
         }
 
         if (ContextCompat.checkSelfPermission(
@@ -115,76 +92,31 @@ class PermissionsFragment : GenericFragment() {
                 Manifest.permission.MANAGE_OWN_CALLS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.i("$TAG Request MANAGE_OWN_CALLS permission")
             telecomManagerPermissionLauncher.launch(Manifest.permission.MANAGE_OWN_CALLS)
         }
 
         if (!Compatibility.hasFullScreenIntentPermission(requireContext())) {
-            Log.w(
-                "$TAG Android 14 or newer detected & full screen intent permission hasn't been granted!"
-            )
             Compatibility.requestFullScreenIntentPermission(requireContext())
         }
     }
 
     override fun onResume() {
         super.onResume()
-
-        if (!leaving && areAllPermissionsGranted()) {
-            Log.i("$TAG All permissions have been granted, skipping")
-            leave()
-        }
-    }
-
-    private fun leave() {
-        if (leaving) return
-        leaving = true
-
-        if (requireActivity().intent.getBooleanExtra(AssistantActivity.SKIP_LANDING_EXTRA, false)) {
-            Log.w(
-                "$TAG We were asked to leave assistant if at least an account is already configured"
-            )
-            coreContext.postOnCoreThread { core ->
-                if (core.accountList.isNotEmpty()) {
-                    coreContext.postOnMainThread {
-                        Log.w("$TAG At least one account was found, leaving assistant")
-                        try {
-                            requireActivity().finish()
-                        } catch (ise: IllegalStateException) {
-                            Log.e("$TAG Failed to finish activity: $ise")
-                        }
-                    }
-                } else {
-                    coreContext.postOnMainThread {
-                        Log.w("$TAG No account was found, going to landing fragment")
-                        try {
-                            goToLoginFragment()
-                        } catch (ise: IllegalStateException) {
-                            Log.e("$TAG Failed to navigate to login fragment: $ise")
-                        }
-                    }
-                }
-            }
-        } else {
+        if (areAllPermissionsGranted()) {
+            Log.i("[PermissionsFragment] All permissions granted. Navigating to login.")
             goToLoginFragment()
         }
     }
 
-    private fun goToLoginFragment() {
-        if (findNavController().currentDestination?.id == R.id.permissionsFragment) {
-            val action =
-                PermissionsFragmentDirections.actionPermissionsFragmentToLandingFragment()
-            findNavController().navigate(action)
-        }
+    private fun areAllPermissionsGranted(): Boolean {
+        return Compatibility.getAllRequiredPermissionsArray().all {
+            ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+        } && Compatibility.hasFullScreenIntentPermission(requireContext())
     }
 
-    private fun areAllPermissionsGranted(): Boolean {
-        for (permission in Compatibility.getAllRequiredPermissionsArray()) {
-            if (ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
-                Log.w("$TAG Permission [$permission] hasn't been granted yet!")
-                return false
-            }
+    private fun goToLoginFragment() {
+        if (findNavController().currentDestination?.id == R.id.permissionsFragment) {
+            findNavController().navigate(R.id.action_permissionsFragment_to_thirdPartySipAccountLoginFragment)
         }
-        return Compatibility.hasFullScreenIntentPermission(requireContext())
     }
 }
