@@ -4,7 +4,7 @@
     <!ENTITY appName "ThirdEar">
 ]>
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">&appName;</string>
 
     <!-- Not translatable strings -->
@@ -691,6 +691,7 @@
     <string name="call_action_pause_call">Pause</string>
     <string name="call_action_resume_call">Resume</string>
     <string name="call_action_record_call">Record</string>
+    <string name="call_action_support_call">Support</string>
     <string name="call_action_hang_up">Hang up</string>
     <string name="call_action_change_layout">Layout</string>
     <string name="call_state_outgoing_progress">In progress</string>
