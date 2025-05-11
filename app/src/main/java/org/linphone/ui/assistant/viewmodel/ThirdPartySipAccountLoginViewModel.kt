@@ -41,6 +41,7 @@ import org.linphone.network.RetrofitBuilder
 import org.linphone.ui.GenericViewModel
 import org.linphone.utils.AppUtils
 import org.linphone.utils.Event
+import org.linphone.utils.UserSession
 import java.util.Locale
 
 class ThirdPartySipAccountLoginViewModel
@@ -171,7 +172,16 @@ constructor() : GenericViewModel() {
                     val apiPassword = userDetails.password
                     val apiDomain = userDetails.authorized_sip_domain
 
-                    Log.i("$TAG Parsed username is [$apiUsername] and domain [$apiDomain]")
+                    UserSession.accountType = userDetails.account_type
+                    UserSession.supportNumber = userDetails.support_number
+                    UserSession.authorizedSipDomain = userDetails.authorized_sip_domain
+
+                    Log.i(
+                        "$TAG Parsed username is [$apiUsername] and domain [$apiDomain]" +
+                            "ACCOUNT TYPE ==== $UserSession.accountType " +
+                            "SUPPORT NUMBER == ${UserSession.supportNumber}" +
+                                "DOMAIN ===== ${UserSession.authorizedSipDomain}"
+                    )
 
                     newlyCreatedAuthInfo = Factory.instance().createAuthInfo(
                         apiUsername, "", apiPassword, null, null, apiDomain
@@ -189,6 +199,7 @@ constructor() : GenericViewModel() {
                     newlyCreatedAccount = core.createAccount(accountParams)
                     core.addListener(coreListener)
                     core.addAccount(newlyCreatedAccount)
+
                 } catch (e: Exception) {
                     accountLoginErrorEvent.postValue(Event("Login failed: ${e.localizedMessage}"))
                 }

@@ -66,6 +66,7 @@ import org.linphone.utils.AppUtils
 import org.linphone.utils.AudioUtils
 import org.linphone.utils.Event
 import org.linphone.utils.LinphoneUtils
+import org.linphone.utils.UserSession
 
 class CurrentCallViewModel
     @UiThread
@@ -259,6 +260,12 @@ class CurrentCallViewModel
     }
 
     lateinit var currentCall: Call
+    val isClient = MutableLiveData<Boolean>(UserSession.isClient())
+    val isSupportCallEnabled = MutableLiveData<Boolean>(true)
+    val authorizedSipDomain = UserSession.authorizedSipDomain
+    val isSupportCallActive = MutableLiveData<Boolean>(false)
+
+    private var supportNumber: String? = UserSession.supportNumber
 
     private val contactsListener = object : ContactsListener {
         @WorkerThread
@@ -893,6 +900,27 @@ class CurrentCallViewModel
                 if (recording) {
                     showRecordingToast()
                 }
+            }
+        }
+    }
+
+    @UiThread
+    fun supportCall() {
+        coreContext.postOnCoreThread {
+            currentCall.pause()
+            val number = supportNumber
+            val domain = authorizedSipDomain
+
+            if (!number.isNullOrBlank() && !domain.isNullOrBlank()) {
+                val core = currentCall.core
+                val sipUri = "sip:$number@$domain"
+                core.interpretUrl(sipUri)?.let { address ->
+                    core.inviteAddress(address)
+                    isSupportCallEnabled.postValue(false)
+                    isSupportCallActive.postValue(true) // <-- Mark as active
+                } ?: Log.e(TAG, "Invalid SIP address: $sipUri")
+            } else {
+                Log.e(TAG, "Missing support number or SIP domain. number=$supportNumber, domain=$domain")
             }
         }
     }

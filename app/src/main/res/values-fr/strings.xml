@@ -650,6 +650,7 @@
     <string name="call_action_pause_call">Mettre en pause</string>
     <string name="call_action_resume_call">Reprendre</string>
     <string name="call_action_record_call">Enregistrer</string>
+    <string name="call_action_support_call">soutien</string>
     <string name="call_action_hang_up">Raccrocher</string>
     <string name="call_action_change_layout">Disposition</string>
     <string name="call_state_outgoing_progress">En cours</string>
