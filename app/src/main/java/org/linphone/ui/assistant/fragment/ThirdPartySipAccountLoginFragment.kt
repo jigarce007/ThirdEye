@@ -61,6 +61,9 @@ class ThirdPartySipAccountLoginFragment : GenericFragment() {
         binding.backClickListener = View.OnClickListener { goBack() }
 
         observeToastEvents(viewModel)
+        binding.login.setOnClickListener {
+            viewModel.login(requireContext())
+        }
 
         // Observe showPassword changes
         viewModel.showPassword.observe(viewLifecycleOwner) {
@@ -91,6 +94,7 @@ class ThirdPartySipAccountLoginFragment : GenericFragment() {
         viewModel.registrationInProgress.observe(viewLifecycleOwner) { isInProgress ->
             binding.progressBar?.visibility = if (isInProgress) View.VISIBLE else View.GONE
         }
+
     }
 
     private fun goBack() {
