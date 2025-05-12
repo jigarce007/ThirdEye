@@ -43,6 +43,7 @@ import org.linphone.core.LogCollectionState
 import org.linphone.core.LogLevel
 import org.linphone.core.VFS
 import org.linphone.core.tools.Log
+import org.linphone.utils.UserSession
 
 @MainThread
 class LinphoneApplication : Application(), SingletonImageLoader.Factory {
@@ -74,6 +75,11 @@ class LinphoneApplication : Application(), SingletonImageLoader.Factory {
 
         corePreferences = CorePreferences(context)
         corePreferences.copyAssetsFromPackage()
+        val sharedPreferences = getSharedPreferences("sip_prefs", Context.MODE_PRIVATE)
+
+        UserSession.supportNumber = sharedPreferences.getString("support_number", null)
+        UserSession.accountType = sharedPreferences.getString("account_type", null)
+        UserSession.authorizedSipDomain = sharedPreferences.getString("authorized_sip_domain", null)
 
         if (VFS.isEnabled(context)) {
             VFS.setup(context)

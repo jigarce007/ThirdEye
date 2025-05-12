@@ -274,6 +274,26 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:tint="?attr/color_danger_500" />
 
+            <ImageView
+                android:id="@+id/support_call"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/call_button_size"
+                android:background="@drawable/in_call_button_background_red"
+                android:contentDescription="@string/call_action_support_call"
+                android:enabled="@{viewModel.isRecordingEnabled &amp;&amp; !viewModel.isPaused &amp;&amp; !viewModel.isPausedByRemote &amp;&amp; !viewModel.isSupportCallActive}"
+                android:onClick="@{() -> viewModel.supportCall()}"
+                android:padding="@dimen/call_button_icon_padding"
+                android:selected="@{viewModel.isSupportCallActive}"
+                android:src="@drawable/support_fill"
+                app:layout_constraintBottom_toBottomOf="@+id/local_preview_video_surface"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.901"
+                app:layout_constraintStart_toStartOf="@+id/remote_video_surface"
+                app:layout_constraintTop_toBottomOf="@+id/paused"
+                app:layout_constraintVertical_bias="0.518"
+                app:tint="@color/in_call_button_tint_color" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <include

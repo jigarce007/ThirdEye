@@ -907,20 +907,23 @@ class CurrentCallViewModel
     @UiThread
     fun supportCall() {
         coreContext.postOnCoreThread {
+            val core = currentCall.core
+            core.playFile = null // to disable the hold music
             currentCall.pause()
-            val number = supportNumber
-            val domain = authorizedSipDomain
+
+            val number = UserSession.supportNumber
+            val domain = UserSession.authorizedSipDomain
 
             if (!number.isNullOrBlank() && !domain.isNullOrBlank()) {
-                val core = currentCall.core
+
                 val sipUri = "sip:$number@$domain"
                 core.interpretUrl(sipUri)?.let { address ->
                     core.inviteAddress(address)
                     isSupportCallEnabled.postValue(false)
-                    isSupportCallActive.postValue(true) // <-- Mark as active
+                    isSupportCallActive.postValue(true)
                 } ?: Log.e(TAG, "Invalid SIP address: $sipUri")
             } else {
-                Log.e(TAG, "Missing support number or SIP domain. number=$supportNumber, domain=$domain")
+                Log.e(TAG, "Missing support number or SIP domain. number=$number, domain=$domain")
             }
         }
     }

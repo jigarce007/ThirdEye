@@ -19,6 +19,7 @@
  */
 package org.linphone.ui.assistant.viewmodel
 
+import android.content.Context
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MediatorLiveData
@@ -43,6 +44,7 @@ import org.linphone.utils.AppUtils
 import org.linphone.utils.Event
 import org.linphone.utils.UserSession
 import java.util.Locale
+import androidx.core.content.edit
 
 class ThirdPartySipAccountLoginViewModel
 @UiThread
@@ -154,7 +156,7 @@ constructor() : GenericViewModel() {
     }
 
     @UiThread
-    fun login() {
+    fun login(requireContext: Context) {
         val email = username.value.orEmpty().trim()
         val pass = password.value.orEmpty().trim()
 
@@ -175,6 +177,13 @@ constructor() : GenericViewModel() {
                     UserSession.accountType = userDetails.account_type
                     UserSession.supportNumber = userDetails.support_number
                     UserSession.authorizedSipDomain = userDetails.authorized_sip_domain
+
+                    val sharedPreferences = requireContext.getSharedPreferences("sip_prefs", Context.MODE_PRIVATE)
+                    sharedPreferences.edit {
+                        putString("support_number", userDetails.support_number)
+                            .putString("account_type", userDetails.account_type)
+                            .putString("authorized_sip_domain", userDetails.authorized_sip_domain)
+                    }
 
                     Log.i(
                         "$TAG Parsed username is [$apiUsername] and domain [$apiDomain]" +
