@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<!DOCTYPE resources [<!ENTITY appName "Linphone">]>
+<!DOCTYPE resources [<!ENTITY appName "ThirdEar">]>
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Common words -->
@@ -133,6 +133,7 @@
     <string name="assistant_permissions_post_notifications_title"><b>Notifications :</b> Pour vous informer quand vous recevez un message ou un appel.</string>
     <string name="assistant_permissions_record_audio_title"><b>Microphone :</b> Pour permettre à vos correspondants de vous entendre. </string>
     <string name="assistant_permissions_access_camera_title"><b>Caméra :</b> Pour capturer votre vidéo lors des appels et des conférences.</string>
+    <string name="login_help_message">Contactez-nous pour obtenir votre propre compte https://getThirdEar.com</string>
 
     <!-- Main navigation items -->
     <string name="bottom_navigation_contacts_label">Contacts</string>
@@ -322,7 +323,7 @@
     <string name="manage_account_device_remove">Supprimer</string>
     <string name="manage_account_device_last_connection">Dernière connexion :</string>
     <string name="manage_account_dialog_remove_account_title">Se déconnecter du compte ?</string>
-    <string name="manage_account_dialog_remove_account_message">Si vous souhaitez supprimer définitivement votre compte rendez-vous sur : https://sip.linphone.org</string>
+    <string name="manage_account_dialog_remove_account_message">‼️vous ne recevrez plus d\'appels s\'ils continuent</string>
 
     <string name="account_settings_title">Paramètres de compte</string>
     <string name="account_settings_push_notification_title">Activer les notifications push</string>
@@ -373,7 +374,7 @@
 
     <!-- Contacts -->
     <string name="contacts_list_empty">Aucun contact pour le moment…</string>
-    <string name="contacts_list_sip_empty">Aucun contact SIP pour le moment…</string>
+    <string name="contacts_list_sip_empty">Aucun contact pour le moment…</string>
     <string name="contacts_change_filter_label">Changer le filtre</string>
     <string name="contacts_list_favourites_title">Favoris</string>
     <string name="contacts_list_all_contacts_title">Tous les contacts</string>

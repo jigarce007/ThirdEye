@@ -98,7 +98,7 @@
                 android:text="@{viewModel.displayedAddress, default=`sip:johndoe@sip.linphone.org`}"
                 android:textColor="@color/bc_white"
                 android:textSize="14sp"
-                android:visibility="@{viewModel.hideSipAddresses || viewModel.pipMode || viewModel.halfOpenedFolded ? View.GONE : View.VISIBLE}"
+                android:visibility="invisible"
                 app:layout_constraintTop_toBottomOf="@id/display_name"
                 app:layout_constraintBottom_toBottomOf="@id/hinge_bottom"
                 app:layout_constraintStart_toStartOf="parent"
@@ -241,6 +241,7 @@
                 android:layout_height="wrap_content"
                 layout="@layout/call_media_encryption_info"
                 bind:viewModel="@{viewModel}"
+                android:visibility="invisible"
                 bind:callMediaEncryptionStatisticsClickListener="@{callMediaEncryptionStatisticsClickListener}"
                 app:layout_constraintTop_toBottomOf="@id/name"
                 app:layout_constraintStart_toEndOf="@id/back"
@@ -288,10 +289,10 @@
                 app:layout_constraintBottom_toBottomOf="@+id/local_preview_video_surface"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.901"
+                app:layout_constraintHorizontal_bias="0.907"
                 app:layout_constraintStart_toStartOf="@+id/remote_video_surface"
                 app:layout_constraintTop_toBottomOf="@+id/paused"
-                app:layout_constraintVertical_bias="0.518"
+                app:layout_constraintVertical_bias="0.235"
                 app:tint="@color/in_call_button_tint_color" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

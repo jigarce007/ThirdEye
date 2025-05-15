@@ -133,7 +133,7 @@ class DialogUtils {
                 false
             )
             binding.viewModel = viewModel
-            binding.message.visibility = if (showDeleteAccountLink) View.VISIBLE else View.GONE
+            binding.message.visibility = View.VISIBLE
 
             return getDialog(context, binding)
         }
