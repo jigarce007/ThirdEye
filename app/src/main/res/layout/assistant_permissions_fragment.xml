@@ -204,6 +204,7 @@
                 android:layout_marginBottom="20dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
+                android:visibility="invisible"
                 android:text="@string/assistant_permissions_skip_permissions"
                 app:layout_constraintWidth_max="@dimen/button_max_width"
                 app:layout_constraintVertical_bias="1"

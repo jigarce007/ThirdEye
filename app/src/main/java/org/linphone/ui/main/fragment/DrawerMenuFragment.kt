@@ -47,6 +47,10 @@ import org.linphone.ui.main.MainActivity
 import org.linphone.ui.main.settings.fragment.AccountProfileFragmentDirections
 import org.linphone.ui.main.viewmodel.DrawerMenuViewModel
 import androidx.core.net.toUri
+import androidx.lifecycle.MutableLiveData
+import org.linphone.utils.ConfirmationDialogModel
+import org.linphone.utils.DialogUtils
+import org.linphone.utils.Event
 
 @UiThread
 class DrawerMenuFragment : GenericMainFragment() {
@@ -55,8 +59,10 @@ class DrawerMenuFragment : GenericMainFragment() {
     }
 
     private lateinit var binding: DrawerMenuBinding
-
     private lateinit var viewModel: DrawerMenuViewModel
+    val signOutEvent: MutableLiveData<Event<Unit>> by lazy {
+        MutableLiveData<Event<Unit>>()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,6 +100,28 @@ class DrawerMenuFragment : GenericMainFragment() {
             val navController = (requireActivity() as MainActivity).findNavController()
             navController.navigate(R.id.action_global_helpFragment)
             (requireActivity() as MainActivity).closeDrawerMenu()
+        }
+
+        binding.setDeleteAccountClickListener {
+            val model = ConfirmationDialogModel()
+            model.message.value = "You won't be able to receive calls.\nAre you sure?"
+            val dialog = DialogUtils.getConfirmAccountRemovalDialog(
+                requireContext(),
+                model,
+                showDeleteAccountLink = false
+            )
+            model.confirmEvent.observe(viewLifecycleOwner) {
+                it.consume {
+                    signOut()
+                    dialog.dismiss()
+                }
+            }
+            model.dismissEvent.observe(viewLifecycleOwner) {
+                it.consume {
+                    dialog.dismiss()
+                }
+            }
+            dialog.show()
         }
 
         binding.setQuitClickedListener {
@@ -210,5 +238,31 @@ class DrawerMenuFragment : GenericMainFragment() {
         // Elevation is for showing a shadow around the popup
         popupWindow.elevation = 20f
         popupWindow.showAsDropDown(view, 0, 0, Gravity.BOTTOM)
+    }
+
+    @UiThread
+    fun signOut() {
+        coreContext.postOnCoreThread { core ->
+            val account = core.defaultAccount
+            if (account != null) {
+                val identity = account.params.identityAddress
+                val authInfo = core.authInfoList.firstOrNull {
+                    it.username == identity?.username
+                }
+
+                core.removeAccount(account)
+                authInfo?.let { core.removeAuthInfo(it) }
+
+                core.clearCallLogs()
+                core.clearAccounts()
+                core.clearAllAuthInfo()
+
+                Log.i("$TAG Account [${identity?.asStringUriOnly()}] has been removed")
+
+                signOutEvent.postValue(Event(Unit))
+            } else {
+                Log.w("$TAG Tried to sign out, but no default account was found")
+            }
+        }
     }
 }

@@ -108,6 +108,10 @@ class ContactsListViewModel
         showFilter.value = !corePreferences.hidePhoneNumbers && !corePreferences.hideSipAddresses
 
         coreContext.postOnCoreThread { core ->
+
+            if (corePreferences.contactsFilter != "") {
+                corePreferences.contactsFilter = ""
+            }
             domainFilter = corePreferences.contactsFilter
             areAllContactsDisplayed.postValue(domainFilter.isEmpty())
             checkIfDefaultAccountOnDefaultDomain()

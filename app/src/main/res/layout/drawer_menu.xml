@@ -17,6 +17,9 @@
             name="quitClickedListener"
             type="View.OnClickListener" />
         <variable
+            name="deleteAccountClickListener"
+            type="View.OnClickListener" />
+        <variable
             name="viewModel"
             type="org.linphone.ui.main.viewmodel.DrawerMenuViewModel" />
     </data>
@@ -35,7 +38,7 @@
             android:layout_height="32dp"
             android:layout_marginStart="26dp"
             android:layout_marginTop="15dp"
-            android:src="@drawable/linphone_notification"
+            android:background="@mipmap/ic_launcher_round"
             android:contentDescription="@string/app_name"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -60,38 +63,39 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <ScrollView
+            android:id="@+id/scrollView3"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
             android:fillViewport="true"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/add_account"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/brand_name"
-            app:layout_constraintBottom_toTopOf="@id/add_account">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/brand_name">
 
             <LinearLayout
+                entries="@{viewModel.accounts}"
+                layout="@{@layout/account_list_cell}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                entries="@{viewModel.accounts}"
-                layout="@{@layout/account_list_cell}">
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/no_account_image"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/illu"
                     android:layout_margin="10dp"
-                    android:contentDescription="@null" />
+                    android:contentDescription="@null"
+                    android:src="@drawable/illu" />
 
                 <androidx.appcompat.widget.AppCompatTextView
-                    style="@style/section_header_style"
                     android:id="@+id/no_account_label"
+                    style="@style/section_header_style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/drawer_menu_no_account_configured_yet"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    android:text="@string/drawer_menu_no_account_configured_yet" />
 
             </LinearLayout>
 
@@ -111,7 +115,7 @@
             android:text="@string/drawer_menu_add_account"
             android:drawableStart="@drawable/plus_circle"
             android:drawablePadding="8dp"
-            android:visibility="@{viewModel.hideAddAccount ? View.GONE : View.VISIBLE}"
+            android:visibility="gone"
             app:drawableTint="@color/secondary_button_label_color"
             app:layout_constraintWidth_max="@dimen/button_max_width"
             app:layout_constraintStart_toStartOf="parent"
@@ -158,7 +162,7 @@
             android:drawableStart="@drawable/gear"
             android:drawableEnd="@drawable/caret_right"
             android:drawablePadding="8dp"
-            android:visibility="@{viewModel.hideSettings ? View.GONE : View.VISIBLE}"
+            android:visibility="gone"
             app:drawableTint="?attr/color_main2_500"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -177,7 +181,7 @@
             android:drawableStart="@drawable/record_fill"
             android:drawableEnd="@drawable/caret_right"
             android:drawablePadding="8dp"
-            android:visibility="@{viewModel.hideRecordings ? View.GONE : View.VISIBLE}"
+            android:visibility="gone"
             app:drawableTint="?attr/color_main2_500"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -196,6 +200,7 @@
             android:drawableStart="@drawable/question"
             android:drawableEnd="@drawable/caret_right"
             android:drawablePadding="8dp"
+            android:visibility="gone"
             app:drawableTint="?attr/color_main2_500"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -214,6 +219,23 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/quit" />
 
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/sign_out_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/action_background_bottom"
+            android:text="@string/manage_account_delete"
+            android:drawableStart="@drawable/sign_out"
+            android:onClick="@{deleteAccountClickListener}"
+            style="@style/context_menu_danger_action_label_style"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
         <androidx.appcompat.widget.AppCompatTextView
             android:onClick="@{quitClickedListener}"
             style="@style/header_style"
@@ -224,7 +246,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:text="@string/help_quit_title"
-            android:visibility="@{viewModel.hideQuitButton ? View.GONE : View.VISIBLE, default=gone}"
+            android:visibility="gone"
             android:drawableStart="@drawable/power"
             android:drawablePadding="8dp"
             app:drawableTint="?attr/color_main2_500"

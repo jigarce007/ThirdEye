@@ -86,7 +86,7 @@
             android:drawablePadding="10dp"
             android:drawableTint="@{viewModel.conversationsSelected ? @color/main1_500 : @color/main2_600, default=@color/main2_600}"
             android:text="@string/bottom_navigation_conversations_label"
-            android:visibility="@{viewModel.hideConversations ? View.GONE : View.VISIBLE}"
+            android:visibility="gone"
             textFont="@{viewModel.conversationsSelected ? NotoSansFont.NotoSansBold : NotoSansFont.NotoSansRegular}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/meetings"
@@ -106,7 +106,7 @@
             android:textColor="?attr/color_on_main"
             android:textSize="13sp"
             android:paddingBottom="2dp"
-            android:visibility="@{viewModel.unreadMessages > 0 &amp;&amp; !viewModel.hideConversations ? View.VISIBLE : View.GONE}"
+            android:visibility="gone"
             app:layout_constraintTop_toTopOf="@id/conversations"
             app:layout_constraintStart_toStartOf="@id/conversations"
             app:layout_constraintEnd_toEndOf="@id/conversations"/>

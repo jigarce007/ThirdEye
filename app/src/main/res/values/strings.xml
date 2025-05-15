@@ -173,6 +173,8 @@
     <string name="assistant_permissions_post_notifications_title"><b>Post notifications:</b> To be informed when you receive a message or a call.</string>
     <string name="assistant_permissions_record_audio_title"><b>Record audio:</b> So your correspondent can hear you and to record voice messages.</string>
     <string name="assistant_permissions_access_camera_title"><b>Access camera:</b> To capture video during video calls and conferences.</string>
+    <string name="login_help_message">Contact us to get your own account https://getThirdEar.com</string>
+
 
     <!-- Main navigation items -->
     <string name="bottom_navigation_contacts_label">Contacts</string>
@@ -362,7 +364,7 @@
     <string name="manage_account_device_remove">Remove</string>
     <string name="manage_account_device_last_connection">Last connection:</string>
     <string name="manage_account_dialog_remove_account_title">Sign out of your account?</string>
-    <string name="manage_account_dialog_remove_account_message">If you wish to delete your account permanently, go to: https://sip.linphone.org</string>
+    <string name="manage_account_dialog_remove_account_message">‼️you will no longer receive calls if you proceed</string>
 
     <string name="account_settings_title">Account settings</string>
     <string name="account_settings_push_notification_title">Allow push notifications</string>
@@ -414,7 +416,7 @@
 
     <!-- Contacts -->
     <string name="contacts_list_empty">No contact for the moment…</string>
-    <string name="contacts_list_sip_empty">No SIP contact for the moment…</string>
+    <string name="contacts_list_sip_empty">No contact for the moment…</string>
     <string name="contacts_change_filter_label">Change filter</string>
     <string name="contacts_list_favourites_title">Favourites</string>
     <string name="contacts_list_all_contacts_title">All contacts</string>

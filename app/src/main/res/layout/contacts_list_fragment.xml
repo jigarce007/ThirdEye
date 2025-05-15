@@ -154,7 +154,7 @@
                     android:textColor="@color/secondary_button_label_color"
                     android:gravity="center"
                     android:background="@drawable/secondary_button_background"
-                    android:visibility="@{viewModel.contactsList.empty &amp;&amp; !viewModel.areAllContactsDisplayed ? View.VISIBLE : View.GONE}"
+                    android:visibility="invisible"
                     app:layout_constraintTop_toBottomOf="@id/no_contacts_label"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"/>
