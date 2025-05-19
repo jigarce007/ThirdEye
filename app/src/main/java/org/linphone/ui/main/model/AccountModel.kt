@@ -21,10 +21,12 @@
 
 package org.linphone.ui.main.model
 
+import android.content.Context
 import android.view.View
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
+import org.linphone.LinphoneApplication
 import org.linphone.LinphoneApplication.Companion.coreContext
 import org.linphone.R
 import org.linphone.contacts.AbstractAvatarModel
@@ -40,7 +42,6 @@ import org.linphone.core.RegistrationState
 import org.linphone.core.SecurityLevel
 import org.linphone.core.tools.Log
 import org.linphone.utils.AppUtils
-import org.linphone.utils.LinphoneUtils
 
 class AccountModel
     @WorkerThread
@@ -192,10 +193,18 @@ class AccountModel
         trust.postValue(SecurityLevel.EndToEndEncryptedAndVerified)
         showTrust.postValue(isEndToEndEncryptionMandatory())
 
-        val name = LinphoneUtils.getDisplayName(account.params.identityAddress)
-        displayName.postValue(name)
+//        val name = LinphoneUtils.getDisplayName(account.params.identityAddress)
+//        displayName.postValue(name)
+//
+//        initials.postValue(AppUtils.getInitials(name))
 
-        initials.postValue(AppUtils.getInitials(name))
+        val prefs = LinphoneApplication.coreContext.context.getSharedPreferences(
+            "sip_prefs",
+            Context.MODE_PRIVATE
+        )
+        val number = prefs.getString("phone_number", null) ?: "Unknown"
+        displayName.postValue(number)
+        initials.postValue(AppUtils.getInitials(number))
 
         val pictureUri = account.params.pictureUri.orEmpty()
         if (pictureUri != picturePath.value.orEmpty()) {
