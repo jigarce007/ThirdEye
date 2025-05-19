@@ -55,6 +55,7 @@ class LinphoneApplication : Application(), SingletonImageLoader.Factory {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var coreContext: CoreContext
+
     }
 
     override fun onCreate() {

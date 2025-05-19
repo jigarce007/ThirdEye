@@ -173,23 +173,28 @@ constructor() : GenericViewModel() {
                     val apiUsername = userDetails.username
                     val apiPassword = userDetails.password
                     val apiDomain = userDetails.authorized_sip_domain
+                    val phoneNumber = userDetails.phone_number
 
                     UserSession.accountType = userDetails.account_type
                     UserSession.supportNumber = userDetails.support_number
                     UserSession.authorizedSipDomain = userDetails.authorized_sip_domain
+                    UserSession.phoneNumb = userDetails.phone_number
 
                     val sharedPreferences = requireContext.getSharedPreferences("sip_prefs", Context.MODE_PRIVATE)
                     sharedPreferences.edit {
                         putString("support_number", userDetails.support_number)
                             .putString("account_type", userDetails.account_type)
                             .putString("authorized_sip_domain", userDetails.authorized_sip_domain)
+                            .putString("phone_number", userDetails.phone_number)
                     }
 
                     Log.i(
                         "$TAG Parsed username is [$apiUsername] and domain [$apiDomain]" +
                             "ACCOUNT TYPE ==== $UserSession.accountType " +
                             "SUPPORT NUMBER == ${UserSession.supportNumber}" +
-                                "DOMAIN ===== ${UserSession.authorizedSipDomain}"
+                                "DOMAIN ===== ${UserSession.authorizedSipDomain}" +
+                                "Phone Number ===== ${UserSession.phoneNumb}"
+
                     )
 
                     newlyCreatedAuthInfo = Factory.instance().createAuthInfo(

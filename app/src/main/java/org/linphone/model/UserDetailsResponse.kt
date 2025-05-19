@@ -5,5 +5,6 @@ data class UserDetailsResponse(
     val authorized_sip_domain: String,
     val username: String,
     val password: String,
+    val phone_number: String,
     val support_number: String
 )
