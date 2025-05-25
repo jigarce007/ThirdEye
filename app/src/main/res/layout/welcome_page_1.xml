@@ -16,7 +16,6 @@
             android:layout_marginTop="80dp"
             android:src="@drawable/ic_logo_large"
             android:contentDescription="@null"
-            app:tint="?attr/color_main1_500"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

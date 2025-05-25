@@ -24,6 +24,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
@@ -34,11 +35,15 @@ import org.linphone.databinding.AssistantThirdPartySipAccountLoginFragmentBindin
 import org.linphone.ui.GenericActivity
 import org.linphone.ui.GenericFragment
 import org.linphone.ui.assistant.viewmodel.ThirdPartySipAccountLoginViewModel
+import org.linphone.ui.main.viewmodel.MainViewModel
+import org.linphone.utils.UserSession
 
 @UiThread
 class ThirdPartySipAccountLoginFragment : GenericFragment() {
 
     private lateinit var binding: AssistantThirdPartySipAccountLoginFragmentBinding
+
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val viewModel: ThirdPartySipAccountLoginViewModel by navGraphViewModels(
         R.id.assistant_nav_graph
@@ -63,6 +68,7 @@ class ThirdPartySipAccountLoginFragment : GenericFragment() {
         observeToastEvents(viewModel)
         binding.login.setOnClickListener {
             viewModel.login(requireContext())
+
         }
 
         // Observe showPassword changes
@@ -75,6 +81,10 @@ class ThirdPartySipAccountLoginFragment : GenericFragment() {
 
         // Observe accountLoggedInEvent and handle successful login
         viewModel.accountLoggedInEvent.observe(viewLifecycleOwner) {
+            UserSession.isLogin = false
+            mainViewModel.shouldAutoClick = true
+            mainViewModel.userManuallyNavigatedToStartCall = false
+            mainViewModel.lastVisibleScreen = "HistoryList" // Or whatever is appropriate
             it.consume {
                 requireActivity().finish()
             }

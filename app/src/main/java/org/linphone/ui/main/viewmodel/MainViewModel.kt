@@ -117,6 +117,9 @@ class MainViewModel
     private var monitorAccount = false
 
     private var nonDefaultAccountNotificationsCount = 0
+    var shouldAutoClick = false
+    var userManuallyNavigatedToStartCall = false
+    var lastVisibleScreen: String = ""
 
     private val coreListener = object : CoreListenerStub() {
         @WorkerThread

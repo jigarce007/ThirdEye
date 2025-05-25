@@ -5,6 +5,7 @@ object UserSession {
     var supportNumber: String? = null
     var authorizedSipDomain: String? = null
     var phoneNumb: String? = null
+    var isLogin: Boolean = false
 
     fun isClient(): Boolean = accountType == "client"
 }
