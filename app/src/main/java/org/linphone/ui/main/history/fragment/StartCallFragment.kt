@@ -21,6 +21,8 @@ package org.linphone.ui.main.history.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +49,9 @@ import org.linphone.utils.hideKeyboard
 import org.linphone.utils.removeCharacterAtPosition
 import org.linphone.utils.setKeyboardInsetListener
 import org.linphone.utils.showKeyboard
+import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
+import org.linphone.ui.main.viewmodel.MainViewModel
 
 @UiThread
 class StartCallFragment : GenericAddressPickerFragment() {
@@ -57,6 +62,7 @@ class StartCallFragment : GenericAddressPickerFragment() {
     private lateinit var binding: StartCallFragmentBinding
 
     override lateinit var viewModel: StartCallViewModel
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -191,12 +197,17 @@ class StartCallFragment : GenericAddressPickerFragment() {
 
     override fun onResume() {
         super.onResume()
-
+        mainViewModel.lastVisibleScreen = "StartCall"
         coreContext.postOnCoreThread {
             if (corePreferences.automaticallyShowDialpad) {
                 viewModel.isNumpadVisible.postValue(true)
             }
         }
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (binding.showNumpad.isVisible) {
+                binding.showNumpad.performClick()
+            }
+        }, 100)
     }
 
     override fun onPause() {

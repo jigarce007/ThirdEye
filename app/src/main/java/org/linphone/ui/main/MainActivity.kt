@@ -820,4 +820,10 @@ class MainActivity : GenericActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.shouldAutoClick = true
+        viewModel.userManuallyNavigatedToStartCall = false
+    }
 }

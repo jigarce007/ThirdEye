@@ -20,6 +20,7 @@
 package org.linphone.ui.main.fragment
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
@@ -51,9 +52,15 @@ import androidx.lifecycle.MutableLiveData
 import org.linphone.utils.ConfirmationDialogModel
 import org.linphone.utils.DialogUtils
 import org.linphone.utils.Event
+import org.linphone.utils.UserSession
+import androidx.core.content.edit
+import androidx.fragment.app.activityViewModels
+import org.linphone.ui.main.viewmodel.MainViewModel
 
 @UiThread
 class DrawerMenuFragment : GenericMainFragment() {
+    private val mainViewModel: MainViewModel by activityViewModels()
+
     companion object {
         private const val TAG = "[Drawer Menu Fragment]"
     }
@@ -258,7 +265,16 @@ class DrawerMenuFragment : GenericMainFragment() {
                 core.clearAllAuthInfo()
 
                 Log.i("$TAG Account [${identity?.asStringUriOnly()}] has been removed")
-
+                val sharedPreferences = context?.getSharedPreferences("sip_prefs", Context.MODE_PRIVATE)
+                sharedPreferences?.edit { clear() }
+                UserSession.accountType = null
+                UserSession.supportNumber = null
+                UserSession.authorizedSipDomain = null
+                UserSession.phoneNumb = null
+                UserSession.isLogin = false
+                mainViewModel.shouldAutoClick = true
+                mainViewModel.userManuallyNavigatedToStartCall = false
+                mainViewModel.lastVisibleScreen = "HistoryList"
                 signOutEvent.postValue(Event(Unit))
             } else {
                 Log.w("$TAG Tried to sign out, but no default account was found")

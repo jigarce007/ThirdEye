@@ -23,6 +23,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +34,7 @@ import android.view.animation.AnimationUtils
 import android.widget.PopupWindow
 import androidx.annotation.UiThread
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -47,14 +50,18 @@ import org.linphone.ui.main.fragment.AbstractMainFragment
 import org.linphone.ui.main.history.adapter.HistoryListAdapter
 import org.linphone.utils.ConfirmationDialogModel
 import org.linphone.ui.main.history.viewmodel.HistoryListViewModel
+import org.linphone.ui.main.viewmodel.MainViewModel
 import org.linphone.utils.DialogUtils
 import org.linphone.utils.Event
+import org.linphone.utils.UserSession
 
 @UiThread
 class HistoryListFragment : AbstractMainFragment() {
     companion object {
         private const val TAG = "[History List Fragment]"
     }
+
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private lateinit var binding: HistoryListFragmentBinding
 
@@ -109,6 +116,17 @@ class HistoryListFragment : AbstractMainFragment() {
         binding.historyList.layoutManager = LinearLayoutManager(requireContext())
         binding.historyList.outlineProvider = outlineProvider
         binding.historyList.clipToOutline = true
+
+        // ✅ Automatically trigger the click once on first launch
+        val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val hasClicked = prefs.getBoolean("start_call_clicked", false)
+
+        if (!hasClicked) {
+            Handler(Looper.getMainLooper()).post {
+                binding.newCall.performClick()
+                prefs.edit().putBoolean("start_call_clicked", true).apply()
+            }
+        }
 
         adapter.callLogLongClickedEvent.observe(viewLifecycleOwner) {
             it.consume { model ->
@@ -242,6 +260,7 @@ class HistoryListFragment : AbstractMainFragment() {
         }
 
         binding.setStartCallClickListener {
+            mainViewModel.userManuallyNavigatedToStartCall = true
             if (findNavController().currentDestination?.id == R.id.historyListFragment) {
                 Log.i("$TAG Navigating to start call fragment")
                 val action =
@@ -280,6 +299,20 @@ class HistoryListFragment : AbstractMainFragment() {
             Log.i("$TAG Keep app alive setting is enabled, refreshing view just in case")
             listViewModel.filter()
         }
+
+        if (UserSession.isLogin == false){
+            if (mainViewModel.shouldAutoClick &&
+                !mainViewModel.userManuallyNavigatedToStartCall &&
+                mainViewModel.lastVisibleScreen != "StartCall"
+            ) {
+                UserSession.isLogin = true
+                mainViewModel.shouldAutoClick = false
+                Handler(Looper.getMainLooper()).postDelayed({
+                    binding.newCall.performClick()
+                }, 100)
+            }
+        }
+
     }
 
     private fun copyNumberOrAddressToClipboard(value: String) {
