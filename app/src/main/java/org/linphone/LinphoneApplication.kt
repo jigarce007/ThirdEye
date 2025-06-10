@@ -22,6 +22,7 @@ package org.linphone
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.os.Environment
 import android.os.PowerManager
 import androidx.annotation.MainThread
 import coil3.ImageLoader
@@ -44,6 +45,7 @@ import org.linphone.core.LogLevel
 import org.linphone.core.VFS
 import org.linphone.core.tools.Log
 import org.linphone.utils.UserSession
+import java.io.File
 
 @MainThread
 class LinphoneApplication : Application(), SingletonImageLoader.Factory {
@@ -69,7 +71,10 @@ class LinphoneApplication : Application(), SingletonImageLoader.Factory {
         )
         wakeLock.acquire(20000L) // 20 seconds
 
-        Factory.instance().setLogCollectionPath(context.filesDir.absolutePath)
+//        Factory.instance().setLogCollectionPath(context.filesDir.absolutePath)
+        val externalLogDir = File(Environment.getExternalStorageDirectory(), "linphone/logs")
+        externalLogDir.mkdirs() // Ensure directory exists
+        Factory.instance().setLogCollectionPath(externalLogDir.absolutePath)
         Factory.instance().enableLogCollection(LogCollectionState.Enabled)
         // For VFS
         Factory.instance().setCacheDir(context.cacheDir.absolutePath)

@@ -320,17 +320,35 @@ abstract class AddressSelectionViewModel
             collator.compare(model1.name, model2.name)
         }
 
+//        val list = arrayListOf<ConversationContactOrSuggestionModel>()
+//        list.addAll(conversationsList)
+//        list.addAll(favoritesList)
+//        list.addAll(contactsList)
+//        list.addAll(suggestionsList)
+//
+//        searchInProgress.postValue(false)
+//        modelsList.postValue(list)
+//        isEmpty.postValue(list.isEmpty())
+//        Log.i(
+//            "$TAG Processed [${results.size}] results: [${conversationsList.size}] conversations, [${favoritesList.size}] favorites, [${contactsList.size}] contacts and [${suggestionsList.size}] suggestions"
+//        )
         val list = arrayListOf<ConversationContactOrSuggestionModel>()
         list.addAll(conversationsList)
         list.addAll(favoritesList)
         list.addAll(contactsList)
         list.addAll(suggestionsList)
 
+// ✅ Filter out "sip:" addresses
+        val filteredList = list.filterNot {
+            it.address?.asStringUriOnly()?.startsWith("sip:") == true
+        }
+
         searchInProgress.postValue(false)
-        modelsList.postValue(list)
-        isEmpty.postValue(list.isEmpty())
+        modelsList.postValue(ArrayList(filteredList))
+        isEmpty.postValue(filteredList.isEmpty())
+
         Log.i(
-            "$TAG Processed [${results.size}] results: [${conversationsList.size}] conversations, [${favoritesList.size}] favorites, [${contactsList.size}] contacts and [${suggestionsList.size}] suggestions"
+            "$TAG Processed [${results.size}] results: [${conversationsList.size}] conversations, [${favoritesList.size}] favorites, [${contactsList.size}] contacts and [${suggestionsList.size}] suggestions (after filtering: ${filteredList.size})"
         )
     }
 

@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- To be able to display contacts list & match calling/called numbers -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
@@ -54,6 +54,7 @@
         android:localeConfig="@xml/locales_config"
         android:theme="@style/Theme.Linphone"
         android:appCategory="social"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="35">
 
         <!-- Required for chat message & call notifications to be displayed in Android auto -->

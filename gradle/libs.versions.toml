@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.2"
+agp = "8.9.3"
 converterGson = "2.9.0"
 kotlin = "2.0.21"
 gmsGoogleServices = "4.4.2"
@@ -34,6 +34,8 @@ dotsIndicator = "5.1.0"
 photoview = "2.3.0"
 openidAppauth = "0.11.1"
 linphone = "5.5.+"
+#linphone = "6.0"
+#linphone = "5.5.0-alpha.76+fdff8fdc6e"
 
 [libraries]
 androidx-annotations = { group = "androidx.annotation", name = "annotation", version.ref = "annotations" }

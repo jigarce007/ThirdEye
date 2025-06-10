@@ -309,7 +309,7 @@ class HistoryListFragment : AbstractMainFragment() {
                 mainViewModel.shouldAutoClick = false
                 Handler(Looper.getMainLooper()).postDelayed({
                     binding.newCall.performClick()
-                }, 100)
+                }, 50)
             }
         }
 
