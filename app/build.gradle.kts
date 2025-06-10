@@ -109,17 +109,46 @@ android {
             //noinspection ChromeOsAbiSupport
             abiFilters += listOf("armeabi-v7a", "arm64-v8a")
         }
+
     }
+    packagingOptions {
+        pickFirst("lib/armeabi-v7a/libc++_shared.so")
+        pickFirst("lib/arm64-v8a/libc++_shared.so")
+    }
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a")
+            isUniversalApk = true // This ensures a single APK contains both ABIs
+        }
+    }
+
+//    applicationVariants.all {
+//        val variant = this
+//        variant.outputs
+//            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+//            .forEach { output ->
+// //                output.outputFileName = "linphone-android-${variant.buildType.name}-${project.version}.apk"
+//                output.outputFileName = "thirdeye-debug.apk"
+//            }
+//    }
 
     applicationVariants.all {
-        val variant = this
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .forEach { output ->
-                output.outputFileName = "linphone-android-${variant.buildType.name}-${project.version}.apk"
+        outputs.all {
+            val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val apkName = when {
+                outputImpl.filters.isEmpty() -> "thirdeye-debug-universal.apk"
+                else -> {
+                    val abiFilter = outputImpl.filters
+                        .find { it.filterType == com.android.build.OutputFile.ABI }
+                        ?.identifier ?: "unknown"
+                    "thirdeye-debug-$abiFilter.apk"
+                }
             }
+            outputImpl.outputFileName = apkName
+        }
     }
-
     val keystorePropertiesFile = rootProject.file("keystore.properties")
     val keystoreProperties = Properties()
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -257,6 +286,7 @@ dependencies {
     implementation(libs.retrofit) // Retrofit core
     implementation(libs.converter.gson) // Gson converter
     implementation(libs.logging.interceptor) // Optional logging
+    implementation("com.google.android.material:material:1.10.0")
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {

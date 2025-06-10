@@ -19,10 +19,12 @@
  */
 package org.linphone.ui.assistant.fragment
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import androidx.annotation.UiThread
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -104,6 +106,19 @@ class ThirdPartySipAccountLoginFragment : GenericFragment() {
         viewModel.registrationInProgress.observe(viewLifecycleOwner) { isInProgress ->
             binding.progressBar?.visibility = if (isInProgress) View.VISIBLE else View.GONE
         }
+
+        val flipAnimator = ObjectAnimator.ofFloat(binding.ivLogoSmall, "rotationY", 0f, 360f).apply {
+            duration = 1000L // Duration of one full flip
+            interpolator = LinearInterpolator()
+            repeatCount = 0 // Only one time
+        }
+        val flipAnimator1 = ObjectAnimator.ofFloat(binding.ivLogo, "rotationY", 0f, 360f).apply {
+            duration = 1000L // Duration of one full flip
+            interpolator = LinearInterpolator()
+            repeatCount = 0 // Only one time
+        }
+        flipAnimator1.start()
+        flipAnimator.start()
 
     }
 

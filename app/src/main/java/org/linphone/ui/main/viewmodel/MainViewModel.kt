@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,6 +78,9 @@ class MainViewModel
     val atLeastOneCall = MutableLiveData<Boolean>()
 
     val callsStatus = MutableLiveData<String>()
+
+    private val _askStoragePermissionEvent = MutableLiveData<Event<Unit>>()
+    val askStoragePermissionEvent: LiveData<Event<Unit>> = _askStoragePermissionEvent
 
     val goBackToCallEvent: MutableLiveData<Event<Boolean>> by lazy {
         MutableLiveData<Event<Boolean>>()

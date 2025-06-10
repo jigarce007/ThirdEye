@@ -277,23 +277,25 @@
 
             <ImageView
                 android:id="@+id/support_call"
-                android:layout_width="0dp"
+                android:layout_width="@dimen/call_button_size"
                 android:layout_height="@dimen/call_button_size"
+                android:layout_margin="8dp"
                 android:background="@drawable/in_call_button_background_red"
                 android:contentDescription="@string/call_action_support_call"
                 android:enabled="@{viewModel.isRecordingEnabled &amp;&amp; !viewModel.isPaused &amp;&amp; !viewModel.isPausedByRemote &amp;&amp; !viewModel.isSupportCallActive}"
                 android:onClick="@{() -> viewModel.supportCall()}"
-                android:padding="@dimen/call_button_icon_padding"
+                android:scaleType="centerInside"
+                android:cropToPadding="true"
+                android:clipToOutline="true"
+                android:src="@drawable/ic_support_round"
                 android:selected="@{viewModel.isSupportCallActive}"
-                android:src="@drawable/support_fill"
-                app:layout_constraintBottom_toBottomOf="@+id/local_preview_video_surface"
                 app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintBottom_toBottomOf="@+id/local_preview_video_surface"
+                app:layout_constraintTop_toBottomOf="@+id/paused"
+                app:layout_constraintStart_toStartOf="@+id/remote_video_surface"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.907"
-                app:layout_constraintStart_toStartOf="@+id/remote_video_surface"
-                app:layout_constraintTop_toBottomOf="@+id/paused"
-                app:layout_constraintVertical_bias="0.235"
-                app:tint="@color/in_call_button_tint_color" />
+                app:layout_constraintVertical_bias="0.235" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
